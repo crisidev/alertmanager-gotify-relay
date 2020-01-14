@@ -15,8 +15,9 @@
 package main
 
 import (
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
+
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -30,31 +31,19 @@ type IRCChannel struct {
 }
 
 type Config struct {
-	HTTPHost       string       `yaml:"http_host"`
-	HTTPPort       int          `yaml:"http_port"`
-	IRCNick        string       `yaml:"irc_nickname"`
-	IRCNickPass    string       `yaml:"irc_nickname_password"`
-	IRCRealName    string       `yaml:"irc_realname"`
-	IRCHost        string       `yaml:"irc_host"`
-	IRCPort        int          `yaml:"irc_port"`
-	IRCUseSSL      bool         `yaml:"irc_use_ssl"`
-	IRCChannels    []IRCChannel `yaml:"irc_channels"`
-	NoticeTemplate string       `yaml:"notice_template"`
-	NoticeOnce     bool         `yaml:"notice_once_per_alert_group"`
+	HTTPHost       string `yaml:"http_host"`
+	HTTPPort       int    `yaml:"http_port"`
+	NoticeTemplate string `yaml:"notice_template"`
+	NoticeOnce     bool   `yaml:"notice_once_per_alert_group"`
+	GotifyUrl      string `yaml:"gotify_url"`
+	GotifyApiKey   string `yaml:"gotify_api_key"`
 }
 
 func LoadConfig(configFile string) (*Config, error) {
 	config := &Config{
-		HTTPHost:    "localhost",
-		HTTPPort:    8000,
-		IRCNick:     "alertmanager-irc-relay",
-		IRCNickPass: "",
-		IRCRealName: "Alertmanager IRC Relay",
-		IRCHost:     "irc.freenode.net",
-		IRCPort:     7000,
-		IRCUseSSL:   true,
-		IRCChannels: []IRCChannel{IRCChannel{Name: "#airtest"}},
-		NoticeOnce:  false,
+		HTTPHost:   "localhost",
+		HTTPPort:   8000,
+		NoticeOnce: false,
 	}
 
 	if configFile != "" {

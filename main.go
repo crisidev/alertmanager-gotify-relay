@@ -39,12 +39,12 @@ func main() {
 
 	alertNotices := make(chan AlertNotice, 10)
 
-	ircNotifier, err := NewIRCNotifier(config, alertNotices)
+	gotifier, err := NewGotifier(config, alertNotices)
 	if err != nil {
 		log.Printf("Could not create IRC notifier: %s", err)
 		return
 	}
-	go ircNotifier.Run()
+	go gotifier.Run()
 
 	httpServer, err := NewHTTPServer(config, alertNotices)
 	if err != nil {
@@ -56,12 +56,12 @@ func main() {
 	select {
 	case <-httpServer.StoppedRunning:
 		log.Printf("Http server terminated, exiting")
-	case <-ircNotifier.StoppedRunning:
+	case <-gotifier.StoppedRunning:
 		log.Printf("IRC notifier stopped running, exiting")
 	case s := <-signals:
 		log.Printf("Received %s, exiting", s)
-		ircNotifier.StopRunning <- true
+		gotifier.StopRunning <- true
 		log.Printf("Waiting for IRC to quit")
-		<-ircNotifier.StoppedRunning
+		<-gotifier.StoppedRunning
 	}
 }

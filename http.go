@@ -22,11 +22,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
-	promtmpl "github.com/prometheus/alertmanager/template"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/gorilla/mux"
+	promtmpl "github.com/prometheus/alertmanager/template"
 )
 
 type HTTPListener func(string, http.Handler) error
@@ -80,18 +81,25 @@ func (server *HTTPServer) FormatNotice(data interface{}) string {
 	return msg
 }
 
-func (server *HTTPServer) GetNoticesFromAlertMessage(ircChannel string,
-	data *promtmpl.Data) []AlertNotice {
+func (server *HTTPServer) GetStatusIcon(status string) string {
+	if status == "firing" {
+		return "🔥"
+	} else {
+		return "✅"
+	}
+}
+
+func (server *HTTPServer) GetNoticesFromAlertMessage(instance string, data *promtmpl.Data) []AlertNotice {
 	notices := []AlertNotice{}
 	if server.NoticeOnce {
 		msg := server.FormatNotice(data)
 		notices = append(notices,
-			AlertNotice{Channel: ircChannel, Alert: msg})
+			AlertNotice{Instance: instance, Message: msg, Status: server.GetStatusIcon(data.Status)})
 	} else {
 		for _, alert := range data.Alerts {
 			msg := server.FormatNotice(alert)
 			notices = append(notices,
-				AlertNotice{Channel: ircChannel, Alert: msg})
+				AlertNotice{Instance: instance, Message: msg, Status: server.GetStatusIcon(alert.Status)})
 		}
 	}
 	return notices
@@ -99,7 +107,7 @@ func (server *HTTPServer) GetNoticesFromAlertMessage(ircChannel string,
 
 func (server *HTTPServer) RelayAlert(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	ircChannel := "#" + vars["IRCChannel"]
+	instance := "#" + vars["Instance"]
 
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1024*1024*1024))
 	if err != nil {
@@ -120,7 +128,7 @@ func (server *HTTPServer) RelayAlert(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, alertNotice := range server.GetNoticesFromAlertMessage(
-		ircChannel, &alertMessage) {
+		instance, &alertMessage) {
 		select {
 		case server.AlertNotices <- alertNotice:
 		default:
@@ -136,7 +144,7 @@ func (server *HTTPServer) Run() {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		server.RelayAlert(w, r)
 	})
-	router.Path("/{IRCChannel}").Handler(handler).Methods("POST")
+	router.Path("/{Instance}").Handler(handler).Methods("POST")
 
 	listenAddr := strings.Join(
 		[]string{server.Addr, strconv.Itoa(server.Port)}, ":")

@@ -16,10 +16,11 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"gopkg.in/yaml.v2"
 )
 
 func TestNoConfig(t *testing.T) {
@@ -36,11 +37,6 @@ func TestLoadGoodConfig(t *testing.T) {
 	expectedConfig := &Config{
 		HTTPHost:       "test.web",
 		HTTPPort:       8888,
-		IRCNick:        "foo",
-		IRCHost:        "irc.example.com",
-		IRCPort:        1234,
-		IRCUseSSL:      true,
-		IRCChannels:    []IRCChannel{IRCChannel{Name: "#foobar"}},
 		NoticeTemplate: defaultNoticeTemplate,
 		NoticeOnce:     false,
 	}

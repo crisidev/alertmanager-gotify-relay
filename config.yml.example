@@ -1,0 +1,26 @@
+# Start the HTTP server receiving alerts from Prometheus Webhook binding to
+# this host/port.
+#
+http_host: "0.0.0.0"
+http_port: 8001
+
+gotify_url: "https://gotify.mydomain.com"
+gotify_api_key: "XYXYXYXYXYXYX"
+
+# Define how IRC messages should be sent.
+#
+# Send only one notice when webhook data is received.
+# Note: By default a notice is sent for each alert in the webhook data.
+notice_once_per_alert_group: no
+
+# Define how IRC messages should be formatted.
+#
+# The formatting is based on golang's text/template .
+#notice_template: "Alert {{ .Labels.severity }}: {{ .Labels.alertname }} on {{ .Labels.monitor }} is {{ .Status }} - {{ .GeneratorURL }}"
+notice_template: >
+    Alert: {{ .Labels.alertname }}{{ if .Labels.severity }} ({{ .Labels.severity }}){{ end }}{{ if .Annotations.description }} - {{ .Annotations.description }} -{{ else if .Annotations.info }} - {{ .Annotations.info }} -{{ else if .Annotations.summary }} - {{ .Annotations.summary }} -{{ end }} on {{ if .Labels.monitor }}{{ .Labels.monitor }}{{ else if .Labels.instance }}{{ .Labels.instance }}{{ else }}unknown{{ end }} is {{ if eq .Status "firing" }}🔥{{ else if eq .Status "resolved" }}✅{{ end }} ({{ .Status }}){{ if .GeneratorURL }} - {{ .GeneratorURL }}{{ end }}
+
+# Note: When sending only one notice per alert group the default
+# notice_template is set to
+# notice_template: "Alert: {{ .GroupLabels.alertname }} for {{ .GroupLabels.instance }} is {{ .Status }} - {{ .ExternalURL }}"
+

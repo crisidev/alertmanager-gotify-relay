@@ -15,5 +15,5 @@
 package main
 
 type AlertNotice struct {
-	Channel, Alert string
+	Instance, Message, Status string
 }
